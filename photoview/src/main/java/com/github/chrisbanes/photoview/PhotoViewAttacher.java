@@ -153,6 +153,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
             }
         }
     };
+    private boolean enabled = true;
 
     public PhotoViewAttacher(ImageView imageView) {
         mImageView = imageView;
@@ -323,6 +324,10 @@ public class PhotoViewAttacher implements View.OnTouchListener,
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int
         oldRight, int oldBottom) {
+
+        if(!enabled)
+            return;
+
         // Update our base matrix, as the bounds have changed
         if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
             updateBaseMatrix(mImageView.getDrawable());
@@ -331,6 +336,10 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
     @Override
     public boolean onTouch(View v, MotionEvent ev) {
+
+        if(!enabled)
+            return false;
+
         boolean handled = false;
         if (mZoomEnabled && Util.hasDrawable((ImageView) v)) {
             switch (ev.getAction()) {
@@ -490,13 +499,13 @@ public class PhotoViewAttacher implements View.OnTouchListener,
     }
 
     public void update() {
-        if (mZoomEnabled) {
+//        if (mZoomEnabled) {
             // Update the base matrix using the current drawable
             updateBaseMatrix(mImageView.getDrawable());
-        } else {
-            // Reset the Matrix...
-            resetMatrix();
-        }
+//        } else {
+//            // Reset the Matrix...
+//            resetMatrix();
+//        }
     }
 
     /**
@@ -717,6 +726,14 @@ public class PhotoViewAttacher implements View.OnTouchListener,
             mCurrentFlingRunnable.cancelFling();
             mCurrentFlingRunnable = null;
         }
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean getEnabled() {
+        return enabled;
     }
 
     private class AnimatedZoomRunnable implements Runnable {

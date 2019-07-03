@@ -17,6 +17,3 @@ allprojects {
     }
 }
 
-ext {
-    sdkVersion = 28
-}

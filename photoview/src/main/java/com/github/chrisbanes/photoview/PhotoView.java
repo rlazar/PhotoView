@@ -33,7 +33,9 @@ import androidx.appcompat.widget.AppCompatImageView;
 public class PhotoView extends AppCompatImageView {
 
     private PhotoViewAttacher attacher;
+    private PhotoViewAttacher detachedAttacher;
     private ScaleType pendingScaleType;
+    private boolean attacherDisabled = false;
 
     public PhotoView(Context context) {
         this(context, null);
@@ -73,12 +75,16 @@ public class PhotoView extends AppCompatImageView {
 
     @Override
     public ScaleType getScaleType() {
-        return attacher.getScaleType();
+        if(attacher != null)
+            return attacher.getScaleType();
+        else return super.getScaleType();
     }
 
     @Override
     public Matrix getImageMatrix() {
-        return attacher.getImageMatrix();
+        if(attacher != null)
+            return attacher.getImageMatrix();
+        else return super.getImageMatrix();
     }
 
     @Override
@@ -93,6 +99,10 @@ public class PhotoView extends AppCompatImageView {
 
     @Override
     public void setScaleType(ScaleType scaleType) {
+
+        if(attacherDisabled)
+            super.setScaleType(scaleType);
+
         if (attacher == null) {
             pendingScaleType = scaleType;
         } else {
@@ -128,7 +138,7 @@ public class PhotoView extends AppCompatImageView {
     @Override
     protected boolean setFrame(int l, int t, int r, int b) {
         boolean changed = super.setFrame(l, t, r, b);
-        if (changed) {
+        if (changed && !attacherDisabled) {
             attacher.update();
         }
         return changed;
@@ -252,5 +262,24 @@ public class PhotoView extends AppCompatImageView {
 
     public void setOnSingleFlingListener(OnSingleFlingListener onSingleFlingListener) {
         attacher.setOnSingleFlingListener(onSingleFlingListener);
+    }
+
+    public void enableAttacher(boolean enable){
+        attacherDisabled = !enable;
+        if(!attacherDisabled){
+            if(detachedAttacher != null) {
+                detachedAttacher.setEnabled(true);
+                super.setScaleType(ScaleType.MATRIX);
+            }
+            attacher = detachedAttacher;
+            invalidate();
+        } else {
+            if(attacher != null) {
+                attacher.setEnabled(false);
+                super.setScaleType(attacher.getScaleType());
+            }
+            detachedAttacher = attacher;
+            attacher = null;
+        }
     }
 }
